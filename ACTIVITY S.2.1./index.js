@@ -11,7 +11,10 @@ renderer.setPixelRatio( window.devicePixelRatio );
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-camera.position.setZ(5);
+camera.position.setX(10)
+camera.position.setY(-30)
+camera.position.setZ(15);
+camera.lookAt(0, 0, 0);
 renderer.render( scene, camera );
 
 const loader = new THREE.FileLoader();
@@ -19,39 +22,56 @@ const loader = new THREE.FileLoader();
 loader.load(
 	'pyramid.obj',
     function ( data ) {
-        var vertices = [];
-        var faces = [];
+        var verticesSource = [];
+        var processedVertices = [];
         var lines = data.split('\n');
         for (let i = 0; i < lines.length; i++) {
-            if ( lines[i][0] == 'v' ) {
-                var vertex = lines[i].split(" ").filter(item => item);
-                vertices.push( parseFloat( vertex[1] ), parseFloat( vertex[2] ), parseFloat( vertex[3] ) );
-            } else if ( lines[i][0] == 'f' ) {
-                var face = lines[i].split(" ").filter(item => item);
-                faces.push( parseFloat( face[1] ), parseFloat( face[2] ), parseFloat( face[3] ) );
+            var currentLine = lines[i].split(" ").filter(item => item);
+            if ( currentLine[0] == 'v' ) {
+                verticesSource.push( new Array( currentLine[1], currentLine[2], currentLine[3] ) );
+            }
+            if ( currentLine[0] == 'f' ) {
+                console.log(currentLine)
+                for (let j = 1; j < currentLine.length; j++ ) {
+                    let currentFace = currentLine[j] - 1;
+                    console.log(currentFace);
+                    console.log('verticesSource', verticesSource[currentFace]);
+                    var currentVertex = verticesSource[currentLine[j] - 1];
+                    console.log('currentVertex', currentVertex);
+                    console.log('iteration')
+                    currentVertex.forEach( (element) => {
+                        processedVertices.push( element );
+                    });
+                }
+                
             }
         }
-        const verticesOfPyramid = new Float32Array( vertices );
-        const indicesOfFaces = new Float32Array( faces );
 
-        const geometry = new THREE.PolyhedronGeometry( verticesOfPyramid, indicesOfFaces, 3.0, 2 );
+        console.log('verticesSource', verticesSource);
+        console.log('processedVertices', processedVertices);
+
+        const vertices = new Float32Array(processedVertices); 
+
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
         const material = new THREE.MeshBasicMaterial( { color: 0x467599, wireframe: false } );
-        const pyramid = new THREE.Mesh( geometry, material );
+        const mesh = new THREE.Mesh(geometry, material);
 
         geometry.translate(0,0,0);
 
-        scene.add(pyramid);
+        scene.add(mesh);
 
         function animate() {
             requestAnimationFrame( animate );
 
-            pyramid.rotation.x += 0.01;
-            pyramid.rotation.y += 0.01;
+            mesh.rotation.x += 0.01;
+            mesh.rotation.y += 0.01;
+            mesh.rotation.z += 0.01;
 
             renderer.render( scene, camera );
         }
         renderer.render( scene, camera );
-        // animate();
+        animate();
 
     },
     function ( xhr ) {
@@ -61,4 +81,3 @@ loader.load(
         console.error( err );
     }
 );
-
