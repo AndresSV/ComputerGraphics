@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0 user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <title>The Turntable</title>
+</head>
+<body style="background-color:grey;">
+    <script type="importmap">
+        {
+            "imports" : {
+                "three": "./three.module.js"
+            }
+        }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OBJLoader } from './jsm/loaders/OBJLoader.js';
+
+        let SCREEN_WIDTH = window.innerWidth;
+        let SCREEN_HEIGHT = window.innerHeight;
+        const FOV = 45;
+        let ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT;
+        const NEAR = 1;
+        const FAR = 2000;
+
+        let theta;
+        let axisHelper;
+        let camera;
+        let gridHelper;
+        let scene;
+        let renderer;
+        let object;
+        let container;
+
+        var isRotatingOnLeft = false
+        var isRotatingOnRight = false
+        var isGettingCloser = false
+        var isMovingAway = false
+
+        init();
+        animate();
+
+        function init() {
+            theta = 0;
+
+            container = document.createElement('div');
+            document.body.appendChild(container);
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            camera = new THREE.PerspectiveCamera(FOV, ASPECT, NEAR, FAR);
+            camera.position.set(0,20,200);
+
+            scene = new THREE.Scene();
+            scene.add(camera);
+            
+            gridHelper = new THREE.GridHelper(2000, 100);
+            scene.add(gridHelper);
+
+            axisHelper = new THREE.AxesHelper(100);
+            scene.add(axisHelper);
+
+            const ambient = new THREE.AmbientLight(0xcccccc, 0.4);
+            scene.add(ambient);
+
+            const point = new THREE.PointLight(0xffffff, 0.8);
+            camera.add(point);
+
+            const manager = new THREE.LoadingManager(function () {
+                object.position.set(0,-157,0);
+                console.log(object.position);
+                scene.add(object);
+            });
+
+            const loader = new OBJLoader(manager);
+
+            loader.load('ninja/ninjaHead_Low.obj',
+                function (obj) {
+                    object = obj;
+                },
+                function ( xhr ) {
+                    console.log( (xhr.loaded / xhr.total * 100) + '% loaded' );
+                },
+                function ( err ) {
+                    console.error( err );
+                },
+            );
+
+            
+            container.appendChild(renderer.domElement);
+
+            window.addEventListener('resize', windowResize);
+            window.addEventListener('keydown', turntable)
+
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            render();
+        }
+
+        function render() {
+            camera.lookAt(0,16,0);
+            renderer.render(scene, camera);
+        }
+
+        function windowResize() {
+            SCREEN_WIDTH = window.innerWidth;
+            SCREEN_HEIGHT = window.innerHeight;
+            ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT;
+            camera.aspect = ASPECT;
+
+            camera.updateProjectionMatrix();
+            renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+        }
+
+        function turntable(key) {
+            let distance = Math.sqrt( Math.pow(object.position.x - camera.position.x ,2) + Math.pow(object.position.z - camera.position.z ,2) );
+            switch (key.code) {
+                case "KeyA":
+                    theta += 0.03;
+                    camera.position.x = distance * Math.sin( theta ); 
+                    camera.position.z = distance * Math.cos( theta );
+                    break;
+                case "KeyD":
+                    theta -= 0.03
+                    camera.position.x = distance * Math.sin( theta ); 
+                    camera.position.z = distance * Math.cos( theta );
+                    break;
+                case "KeyQ":
+                    distance = distance + 2;
+                    camera.position.x = distance * Math.sin( theta ); 
+                    camera.position.z = distance * Math.cos( theta );
+                    break;
+                case "KeyE":
+                    distance = (distance - 1.3 < 10) ? 10 : ( distance - 1.3 );
+                    camera.position.x = distance * Math.sin( theta ); 
+                    camera.position.z = distance * Math.cos( theta );
+                    break;
+                default:
+                    break;
+            }
+        }
+
+    </script>
+</body>
+</html>

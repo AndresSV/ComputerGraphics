@@ -20,7 +20,7 @@ renderer.render( scene, camera );
 const loader = new THREE.FileLoader();
 
 loader.load(
-	'pyramid.obj',
+	'octahedron.obj',
     function ( data ) {
         var verticesSource = [];
         var processedVertices = [];
@@ -66,7 +66,7 @@ loader.load(
 
             mesh.rotation.x += 0.01;
             mesh.rotation.y += 0.01;
-            mesh.rotation.z += 0.01;
+    //mesh.rotation.z += 0.01;
 
             renderer.render( scene, camera );
         }
