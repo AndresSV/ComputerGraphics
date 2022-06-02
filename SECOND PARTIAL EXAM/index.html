@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0 user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"
+    />
+    <title>Second Partial Exam</title>
+  </head>
+  <body style="background-color: grey">
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "./three.module.js"
+        }
+      }
+    </script>
+    <script type="module">
+      import * as THREE from "three";
+      import { OBJLoader } from "./jsm/loaders/OBJLoader.js";
+
+      let SCREEN_WIDTH = window.innerWidth;
+      let SCREEN_HEIGHT = window.innerHeight;
+      const FOV = 45;
+      let ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT;
+      const NEAR = 1;
+      const FAR = 2000;
+
+      let axisHelper;
+      let camera;
+      let gridHelper;
+      let scene;
+      let renderer;
+      let pyramid;
+      let redCube;
+      let greenTriangle;
+      let activeObject;
+      let activeObjectID;
+      let container;
+
+      init();
+      animate();
+
+      function init() {
+        container = document.createElement("div");
+        document.body.appendChild(container);
+        renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        camera = new THREE.PerspectiveCamera(FOV, ASPECT, NEAR, FAR);
+        camera.position.set(0, 3, 3);
+
+        scene = new THREE.Scene();
+        scene.add(camera);
+
+        gridHelper = new THREE.GridHelper(2000, 100);
+        scene.add(gridHelper);
+
+        axisHelper = new THREE.AxesHelper(100);
+        scene.add(axisHelper);
+
+        const ambient = new THREE.AmbientLight(0xcccccc, 0.4);
+        scene.add(ambient);
+
+        const point = new THREE.PointLight(0xffffff, 0.8);
+        camera.add(point);
+
+        const manager = new THREE.LoadingManager(function () {
+          pyramid.position.set(0, 0, 0);
+		  pyramid.traverse( function (obj) {
+		    if (obj.isMesh){
+			  obj.material.color.set(0x467599);
+			}
+		  } );
+          activeObject = pyramid;
+          activeObjectID = 1;
+          scene.add(activeObject);
+        });
+
+        const loader = new OBJLoader(manager);
+
+        loader.load(
+          "./pyramid.obj",
+          function (obj) {
+            pyramid = obj;
+          },
+          function (xhr) {
+            console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
+          },
+          function (err) {
+            console.error(err);
+          }
+        );
+
+        redCube = new THREE.Mesh(
+          new THREE.BoxGeometry(1, 1, 1),
+          new THREE.MeshBasicMaterial({ color: 0xd2042d })
+        );
+
+        const vertices = new Float32Array([
+		  -1.0, -1.0, 1.0, 
+		   1.0, -1.0, 1.0, 
+		   1.0,  1.0, 1.0
+        ]);
+
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute(
+          "position",
+          new THREE.BufferAttribute(vertices, 3)
+        );
+        greenTriangle = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ color: 0x00ff00 , side: THREE.DoubleSide}));
+
+        container.appendChild(renderer.domElement);
+
+        window.addEventListener("resize", windowResize);
+        window.addEventListener("keydown", controls);
+      }
+
+      function animate() {
+        requestAnimationFrame(animate);
+        render();
+      }
+
+      function render() {
+        camera.lookAt(0, 0, 0);
+        renderer.render(scene, camera);
+      }
+
+      function windowResize() {
+        SCREEN_WIDTH = window.innerWidth;
+        SCREEN_HEIGHT = window.innerHeight;
+        ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT;
+        camera.aspect = ASPECT;
+
+        camera.updateProjectionMatrix();
+        renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+      }
+
+      function controls(key) {
+        switch (key.code) {
+          case "Digit1":
+            scene.remove(activeObject);
+            if (activeObjectID == 2) {
+              redCube = activeObject;
+              activeObjectID = 1;
+              activeObject = pyramid;
+            }
+            if (activeObjectID == 3) {
+              greenTriangle = activeObject;
+              activeObjectID = 1;
+              activeObject = pyramid;
+            }
+            scene.add(activeObject);
+            break;
+          case "Digit2":
+            scene.remove(activeObject);
+            if (activeObjectID == 1) {
+              pyramid = activeObject;
+              activeObjectID = 2;
+              activeObject = redCube;
+            }
+            if (activeObjectID == 3) {
+              greenTriangle = activeObject;
+              activeObjectID = 2;
+              activeObject = redCube;
+            }
+            scene.add(activeObject);
+            break;
+          case "Digit3":
+            scene.remove(activeObject);
+            if (activeObjectID == 1) {
+              pyramid = activeObject;
+              activeObjectID = 3;
+              activeObject = greenTriangle;
+            }
+            if (activeObjectID == 2) {
+              redCube = activeObject;
+              activeObjectID = 3;
+              activeObject = greenTriangle;
+            }
+            scene.add(activeObject);
+            break;
+          case "KeyQ":
+            activeObject.rotation.x += 0.03;
+            break;
+          case "KeyW":
+            activeObject.rotation.x -= 0.03;
+            break;
+          case "KeyA":
+            activeObject.rotation.y += 0.03;
+            break;
+          case "KeyS":
+            activeObject.rotation.y -= 0.03;
+            break;
+          case "KeyZ":
+            activeObject.rotation.z += 0.03;
+            break;
+          case "KeyX":
+            activeObject.rotation.z -= 0.03;
+            break;
+          default:
+            break;
+        }
+      }
+    </script>
+  </body>
+</html>
