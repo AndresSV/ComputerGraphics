@@ -5,7 +5,7 @@ m_ProjectFiles:
     m_ContentTrackingEnabled: 1
     m_ModificationDate:
       serializedVersion: 2
-      ticks: 637897315230000000
+      ticks: 637896282840000000
     m_Hash: 3521293456
   m_LockFileStatus:
     m_FilePath: /Users/andressv/Documents/GitHub/ComputerGraphics/Unity/UNITY/Packages/packages-lock.json
@@ -13,7 +13,7 @@ m_ProjectFiles:
     m_ContentTrackingEnabled: 1
     m_ModificationDate:
       serializedVersion: 2
-      ticks: 637897315870000000
+      ticks: 637896282840000000
     m_Hash: 2797659484
 m_EmbeddedPackageManifests:
   m_ManifestsStatus: {}
